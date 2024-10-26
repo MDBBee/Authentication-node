@@ -80,13 +80,15 @@ const login = async (req, res) => {
   if (!isPasswordCorrect) {
     throw new CustomError.UnauthenticatedError("Invalid Credentials");
   }
-  // const tokenUser = createTokenUser(user);
-  // attachCookiesToResponse({ res, user: tokenUser });
   if (!user.isVerified)
     throw new CustomError.UnauthenticatedError(
       "Please complete your verification by checking your email!"
     );
-  res.status(StatusCodes.OK).json({ user });
+
+  const tokenUser = createTokenUser(user);
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
 const logout = async (req, res) => {

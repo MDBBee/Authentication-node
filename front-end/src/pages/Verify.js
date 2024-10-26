@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { useGlobalContext } from '../context';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useLocation, Link } from "react-router-dom";
+import styled from "styled-components";
+import { useGlobalContext } from "../context";
+import axios from "axios";
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
@@ -16,10 +16,13 @@ const VerifyPage = () => {
   const verifyToken = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.post('/api/v1/auth/verify-email', {
-        verificationToken: query.get('token'),
-        email: query.get('email'),
-      });
+      const { data } = await axios.post(
+        `http://localhost:5000/api/v1/auth/verify-email`,
+        {
+          verificationToken: query.get("token"),
+          email: query.get("email"),
+        }
+      );
     } catch (error) {
       // console.log(error.response);
       setError(true);
@@ -35,7 +38,7 @@ const VerifyPage = () => {
 
   if (loading) {
     return (
-      <Wrapper className='page'>
+      <Wrapper className="page">
         <h2>Loading...</h2>
       </Wrapper>
     );
@@ -43,16 +46,16 @@ const VerifyPage = () => {
 
   if (error) {
     return (
-      <Wrapper className='page'>
+      <Wrapper className="page">
         <h4>There was an error, please double check your verification link </h4>
       </Wrapper>
     );
   }
 
   return (
-    <Wrapper className='page'>
+    <Wrapper className="page">
       <h2>Account Confirmed</h2>
-      <Link to='/login' className='btn'>
+      <Link to="/login" className="btn">
         Please login
       </Link>
     </Wrapper>
