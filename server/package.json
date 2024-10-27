@@ -4,7 +4,8 @@
   "description": "an api for an ecommerce app",
   "main": "app.js",
   "scripts": {
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "start": "node app.js"
   },
   "author": "Bobby Ugbebor",
   "license": "ISC",

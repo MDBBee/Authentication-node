@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Token = require("../models/Token");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors");
 const {
@@ -61,7 +62,6 @@ const verifyEmail = async (req, res) => {
 
   res.status(StatusCodes.CREATED).json({
     msg: "Verification successful!!",
-    user,
   });
 };
 
@@ -85,10 +85,38 @@ const login = async (req, res) => {
       "Please complete your verification by checking your email!"
     );
 
-  const tokenUser = createTokenUser(user);
-  attachCookiesToResponse({ res, user: tokenUser });
+  const accessToken = createTokenUser(user);
 
-  res.status(StatusCodes.OK).json({ user: tokenUser });
+  //create refresh token
+  let refreshToken = "";
+  //check for existing token
+  const refreshTokenExists = await Token.findOne({ user: user._id });
+
+  if (refreshTokenExists) {
+    const { isValid } = refreshTokenExists;
+    if (!isValid)
+      throw new CustomError.UnauthenticatedError(
+        "Access denied, invalid credentials!!.."
+      );
+    refreshToken = refreshTokenExists;
+    attachCookiesToResponse({ res, user: accessToken, refreshToken });
+    res.status(StatusCodes.OK).json({ user: accessToken });
+    return;
+  }
+
+  refreshToken = crypto.randomBytes(40).toString("hex");
+  const userAgent = req.headers["user-agent"];
+  const ip = req.ip;
+  const userToken = { refreshToken, ip, userAgent, user: user._id };
+  console.log("***", refreshToken);
+
+  //1)Sending/saving refreshToken and req info to the backend-- database
+  await Token.create(userToken);
+  //2)Sending cookies(refresh and access tokens) to the frontend-- browserCookies
+  //Note: accessToken = {name: user.name, userId: user._id, role: user.role}
+  //Note: refreshToken = randomnuber674374787847843hehuerhjrehjeh
+  attachCookiesToResponse({ res, user: accessToken, refreshToken });
+  res.status(StatusCodes.OK).json({ user: accessToken });
 };
 
 const logout = async (req, res) => {
