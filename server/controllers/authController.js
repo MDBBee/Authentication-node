@@ -7,8 +7,10 @@ const {
   createTokenUser,
   sendVerificationEmail,
   sendResetPasswordEmail,
+  createHash,
 } = require("../utils");
 const crypto = require("crypto");
+const { log } = require("console");
 
 const register = async (req, res) => {
   const { email, name, password } = req.body;
@@ -147,8 +149,9 @@ const forgotPassword = async (req, res) => {
     const forgotPasswordToken = crypto.randomBytes(70).toString("hex");
     const tenMinutes = 1000 * 60 * 10;
     const forgotPasswordExpirationTime = new Date(Date.now() + tenMinutes);
+    console.log(createHash(forgotPasswordToken));
 
-    user.passwordToken = forgotPasswordToken;
+    user.passwordToken = createHash(forgotPasswordToken);
     user.passwordTokenExpirationDate = forgotPasswordExpirationTime;
 
     await user.save();
@@ -158,7 +161,7 @@ const forgotPassword = async (req, res) => {
       name: user.name,
       email: user.email,
       origin,
-      passwordToken: user.passwordToken,
+      passwordToken: forgotPasswordToken,
     });
   }
 
@@ -176,9 +179,10 @@ const resetPassword = async (req, res) => {
 
   if (user) {
     const currentTime = new Date();
+    console.log("toke*******", createHash(token));
 
     if (
-      user.passwordToken === token &&
+      user.passwordToken === createHash(token) &&
       currentTime < user.passwordTokenExpirationDate
     ) {
       user.password = password;
