@@ -6,6 +6,7 @@ const {
   attachCookiesToResponse,
   createTokenUser,
   sendVerificationEmail,
+  sendResetPasswordEmail,
 } = require("../utils");
 const crypto = require("crypto");
 
@@ -133,9 +134,46 @@ const logout = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "user logged out!" });
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new CustomError.BadRequestError("Please provide email and password");
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user) {
+    const forgotPasswordToken = crypto.randomBytes(70).toString("hex");
+    const tenMinutes = 1000 * 60 * 10;
+    const forgotPasswordExpirationTime = new Date(Date.now() + tenMinutes);
+
+    user.passwordToken = forgotPasswordToken;
+    user.passwordTokenExpirationDate = forgotPasswordExpirationTime;
+
+    await user.save();
+    //Send Email
+    const origin = "http://localhost:3000";
+    await sendResetPasswordEmail({
+      name: user.name,
+      email: user.email,
+      origin,
+      passwordToken: user.passwordToken,
+    });
+  }
+
+  res.status(StatusCodes.OK).json({ msg: "Please Check your email...!" });
+};
+
+const resetPassword = async (req, res) => {
+  res.send("resetP");
+};
+
 module.exports = {
   register,
   login,
   logout,
   verifyEmail,
+  forgotPassword,
+  resetPassword,
 };

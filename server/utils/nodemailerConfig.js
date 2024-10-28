@@ -2,10 +2,11 @@ module.exports = {
   tls: {
     rejectUnauthorized: false,
   },
+
   host: "smtp.ethereal.email",
   port: 587,
   auth: {
-    user: "alexanne.barton@ethereal.email",
-    pass: "Jkntpvj8Jf98c1q2XD",
+    user: "laura.monahan18@ethereal.email",
+    pass: "4RDR89zrccpa1BRz9b",
   },
 };
